@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".operation">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome!"
+        android:textSize="22sp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnMessage" />
+
+    <Button android:id="@+id/btnMessage" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="1. Show Message" app:layout_constraintTop_toBottomOf="@id/textView" />
+    <Button android:id="@+id/btnCounter" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="2. Counter++" app:layout_constraintTop_toBottomOf="@id/btnMessage" />
+    <Button android:id="@+id/btnReset" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="3. Reset Counter" app:layout_constraintTop_toBottomOf="@id/btnCounter" />
+    <Button android:id="@+id/btnChangeText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="4. Change Text" app:layout_constraintTop_toBottomOf="@id/btnReset" />
+    <Button android:id="@+id/btnTime" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="5. Show Time" app:layout_constraintTop_toBottomOf="@id/btnChangeText" />
+    <Button android:id="@+id/btnRandom" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="6. Random Number" app:layout_constraintTop_toBottomOf="@id/btnTime" />
+    <Button android:id="@+id/btnToggle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="7. Toggle Text" app:layout_constraintTop_toBottomOf="@id/btnRandom" />
+    <Button android:id="@+id/btnGreeting" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="8. Greeting" app:layout_constraintTop_toBottomOf="@id/btnToggle" />
+    <Button android:id="@+id/btnLength" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="9. Word Length" app:layout_constraintTop_toBottomOf="@id/btnGreeting" />
+    <Button android:id="@+id/btnMultiply" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="10. Multiply by 2" app:layout_constraintTop_toBottomOf="@id/btnLength" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
