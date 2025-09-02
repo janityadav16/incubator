@@ -23,4 +23,6 @@ class change_activity : AppCompatActivity() {
             // Create intent to start SecondActivity
             val intent = Intent(this, calculator::class.java)
             startActivity(intent)
-        }}}
+        }
+    }
+}
