@@ -5,168 +5,105 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-
 class calculator : AppCompatActivity() {
 
-    private lateinit var resultText: TextView
-    private var input: String = ""   // stores expression
-    private var lastNumeric: Boolean = false
-    private var lastDot: Boolean = false
+    private lateinit var textViewInput: TextView
+    private var input = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_calculator)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        textViewInput = findViewById(R.id.textViewInput)
 
-        resultText = findViewById(R.id.resultText)
-
-        // Digits
-        val digits = listOf(
+        // Number buttons
+        val numbers = listOf(
             R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4,
-            R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9
+            R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9, R.id.btnDot
         )
-        for (id in digits) {
-            findViewById<Button>(id).setOnClickListener { onDigit((it as Button).text.toString()) }
-        }
 
-        // Operators
-        findViewById<Button>(R.id.btnPlus).setOnClickListener { onOperator("+") }
-        findViewById<Button>(R.id.btnMinus).setOnClickListener { onOperator("-") }
-        findViewById<Button>(R.id.btnMultiply).setOnClickListener { onOperator("*") }
-        findViewById<Button>(R.id.btnDivide).setOnClickListener { onOperator("/") }
-
-        // Dot
-        findViewById<Button>(R.id.btnDot).setOnClickListener { onDot() }
-
-        // Clear
-        findViewById<Button>(R.id.btnClear).setOnClickListener { onClear() }
-
-        // Backspace
-        findViewById<Button>(R.id.btnBack).setOnClickListener { onBack() }
-
-        // Equals
-        findViewById<Button>(R.id.btnEquals).setOnClickListener { onEqual() }
-    }
-
-    private fun onDigit(digit: String) {
-        input += digit
-        resultText.text = input
-        lastNumeric = true
-    }
-
-    private fun onOperator(op: String) {
-        if (lastNumeric) {
-            input += op
-            resultText.text = input
-            lastNumeric = false
-            lastDot = false
-        }
-    }
-
-    private fun onDot() {
-        if (lastNumeric && !lastDot) {
-            input += "."
-            resultText.text = input
-            lastNumeric = false
-            lastDot = true
-        }
-    }
-
-    private fun onClear() {
-        input = ""
-        resultText.text = "0"
-        lastNumeric = false
-        lastDot = false
-    }
-
-    private fun onBack() {
-        if (input.isNotEmpty()) {
-            input = input.dropLast(1)
-            resultText.text = if (input.isEmpty()) "0" else input
-        }
-    }
-
-    private fun onEqual() {
-        try {
-            val expression = input.replace("÷", "/").replace("×", "*")
-            val result = eval(expression)  // simple evaluator
-            resultText.text = result.toString()
-            input = result.toString()
-        } catch (e: Exception) {
-            resultText.text = "Error"
-        }
-    }
-
-    // Basic expression evaluator
-    private fun eval(expr: String): Double {
-        return object : Any() {
-            var pos = -1
-            var ch: Int = 0
-
-            fun nextChar() { ch = if (++pos < expr.length) expr[pos].code else -1 }
-            fun eat(charToEat: Int): Boolean {
-                while (ch == ' '.code) nextChar()
-                if (ch == charToEat) {
-                    nextChar()
-                    return true
-                }
-                return false
+        for (id in numbers) {
+            findViewById<Button>(id).setOnClickListener {
+                val value = (it as Button).text.toString()
+                input += value
+                textViewInput.text = input
             }
+        }
 
-            fun parse(): Double {
-                nextChar()
-                val x = parseExpression()
-                if (pos < expr.length) throw RuntimeException("Unexpected: " + expr[pos])
-                return x
+        // Operator buttons
+        val operators = listOf(
+            R.id.btnAdd, R.id.btnSub, R.id.btnMul, R.id.btnDiv, R.id.btnMod
+        )
+
+        for (id in operators) {
+            findViewById<Button>(id).setOnClickListener {
+                val value = (it as Button).text.toString()
+                input += " $value "
+                textViewInput.text = input
             }
+        }
 
-            fun parseExpression(): Double {
-                var x = parseTerm()
-                while (true) {
-                    when {
-                        eat('+'.code) -> x += parseTerm()
-                        eat('-'.code) -> x -= parseTerm()
-                        else -> return x
+        // Clear button
+        findViewById<Button>(R.id.btnClear).setOnClickListener {
+            input = ""
+            textViewInput.text = "0"
+        }
+
+        // Equal button
+        findViewById<Button>(R.id.btnEqual).setOnClickListener {
+            try {
+                val result = evaluateExpression(input)
+                textViewInput.text = result.toString()
+                input = result.toString()
+            } catch (e: Exception) {
+                textViewInput.text = "Error"
+                input = ""
+            }
+        }
+    }
+
+    // Custom evaluation function
+    private fun evaluateExpression(expression: String): Double {
+        val tokens = expression.trim().split(" ").toMutableList()
+        if (tokens.isEmpty()) return 0.0
+
+        // Pass 1: handle × ÷ %
+        var i = 0
+        while (i < tokens.size) {
+            when (tokens[i]) {
+                "×", "÷", "%" -> {
+                    val left = tokens[i - 1].toDouble()
+                    val right = tokens[i + 1].toDouble()
+                    val result = when (tokens[i]) {
+                        "×", "*" -> left * right
+                        "÷", "/" -> left / right
+                        "%" -> left % right
+                        else -> 0.0
                     }
+                    // Replace [left, operator, right] with result
+                    tokens[i - 1] = result.toString()
+                    tokens.removeAt(i) // remove operator
+                    tokens.removeAt(i) // remove right number
+                    i -= 1
                 }
             }
+            i++
+        }
 
-            fun parseTerm(): Double {
-                var x = parseFactor()
-                while (true) {
-                    when {
-                        eat('*'.code) -> x *= parseFactor()
-                        eat('/'.code) -> x /= parseFactor()
-                        else -> return x
-                    }
-                }
+        // Pass 2: handle + -
+        var result = tokens[0].toDouble()
+        i = 1
+        while (i < tokens.size) {
+            val operator = tokens[i]
+            val nextNumber = tokens[i + 1].toDouble()
+            when (operator) {
+                "+" -> result += nextNumber
+                "-" -> result -= nextNumber
             }
+            i += 2
+        }
 
-            fun parseFactor(): Double {
-                if (eat('+'.code)) return parseFactor() // unary plus
-                if (eat('-'.code)) return -parseFactor() // unary minus
-
-                var x: Double
-                val startPos = pos
-                if (eat('('.code)) { // parentheses
-                    x = parseExpression()
-                    eat(')'.code)
-                } else if (ch in '0'.code..'9'.code || ch == '.'.code) {
-                    while (ch in '0'.code..'9'.code || ch == '.'.code) nextChar()
-                    x = expr.substring(startPos, pos).toDouble()
-                } else {
-                    throw RuntimeException("Unexpected: " + ch.toChar())
-                }
-                return x
-            }
-        }.parse()
+        return result
     }
 }
